@@ -10,10 +10,6 @@ const emptyReward = (): Reward => ({ employee_name: '', reward_reason: '', rewar
 const monthNow = new Date().toISOString().slice(0, 7)
 const demoLeaders: Employee[] = [{ id: 'demo-1', name: 'Голубкин Дмитрий' }, { id: 'demo-2', name: 'Анистратаова Елена' }, { id: 'demo-3', name: 'Процко Алина' }, { id: 'demo-4', name: 'Черданцев Илья' }]
 
-function employeeName(row: Record<string, unknown>) {
-  return String(row.full_name || row.name || [row.last_name, row.first_name, row.middle_name].filter(Boolean).join(' ') || 'Без имени')
-}
-
 export default function App() {
   const [page, setPage] = useState<'form' | 'admin'>('form')
   const [leaders, setLeaders] = useState<Employee[]>([])
@@ -32,11 +28,13 @@ export default function App() {
   useEffect(() => {
     async function loadLeaders() {
       if (!supabase) { setLeaders(demoLeaders); return }
-      const { data, error } = await supabase.from('employees').select('*')
+      const { data, error } = await supabase
+        .from('employees')
+        .select('id,name,Position')
+        .eq('Position', 'Leader')
+        .order('name')
       if (error || !data) { setNotice('Не удалось загрузить сотрудников'); return }
-      const rows = data as Record<string, unknown>[]
-      const withRoles = rows.filter((row) => /лидер|leader/i.test(String(row.role || row.position || '')))
-      setLeaders((withRoles.length ? withRoles : rows).map((row) => ({ id: String(row.id), name: employeeName(row) })).sort((a, b) => a.name.localeCompare(b.name, 'ru')))
+      setLeaders(data.map((row) => ({ id: String(row.id), name: String(row.name) })))
     }
     loadLeaders()
   }, [])
