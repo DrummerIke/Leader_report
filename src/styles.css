@@ -45,8 +45,8 @@ h1,h2,h3{color:#fff}
 label{color:#e6e0de}
 input,select,textarea{background:var(--bork-surface-dark);border-color:var(--bork-border);color:#fff;color-scheme:dark}
 input::placeholder,textarea::placeholder{color:#8f8480}
-input:focus,select:focus,textarea:focus{background:#fff;color:#3a3330;border-color:#fff;box-shadow:0 0 0 3px rgba(243,112,33,.35)}
-input:focus::placeholder,textarea:focus::placeholder{color:#746762}
+input:focus,select:focus,textarea:focus{background:var(--bork-surface-dark);color:#fff;border-color:var(--bork-accent);box-shadow:0 0 0 3px rgba(243,112,33,.22)}
+input:focus::placeholder,textarea:focus::placeholder{color:#9d9390}
 .select-wrap>svg:first-child,.input-icon svg,.select-wrap>svg:last-child{color:var(--bork-muted)}
 .outline{background:transparent;border-color:#9d9390;color:#fff}
 .outline:hover{border-color:#fff;background:rgba(255,255,255,.06)}
@@ -67,3 +67,12 @@ th{background:#282120;color:var(--bork-muted)}
 th,td{border-color:var(--bork-border)}
 .empty{color:var(--bork-muted)}.empty b{color:#fff}
 @media(max-width:900px){aside{background:#282120;border-bottom:1px solid var(--bork-border)}main{min-height:calc(100vh - 70px)}}
+.factor-row{grid-template-columns:1fr 30px}
+.admin-entry{width:100%;border:0;background:transparent;color:#fff;cursor:pointer;text-align:left}
+.admin-entry:hover b{color:var(--bork-accent)}
+.admin-actions{display:flex;align-items:flex-end;gap:14px}.admin-actions label{min-width:190px}.admin-actions input{height:40px}
+.modal-backdrop{position:fixed;z-index:20;inset:0;background:rgba(24,21,20,.78);backdrop-filter:blur(7px);display:grid;place-items:center;padding:20px}
+.login-modal{position:relative;width:min(420px,100%);background:var(--bork-surface);border:1px solid var(--bork-border);border-radius:16px;padding:34px;box-shadow:0 25px 80px rgba(0,0,0,.45)}
+.login-modal h2{text-align:center;margin:14px 0 8px}.login-modal>p{text-align:center;color:var(--bork-muted);font-size:12px;margin:0 0 24px}.login-icon{width:52px;height:52px;border-radius:50%;margin:auto;display:grid;place-items:center;background:rgba(243,112,33,.14);color:var(--bork-accent)}
+.modal-close{position:absolute;right:14px;top:14px;border:0;background:transparent;color:var(--bork-muted)}.login-error{display:block;color:#f38178;font-size:11px;margin-top:9px}.login-submit{justify-content:center;width:100%;margin-top:18px}
+@media(max-width:900px){.admin-actions{align-items:stretch;flex-direction:column}.admin-summary{align-items:flex-start;gap:20px}.admin-entry{width:auto;border-top:0;margin:0}.login-modal{padding:28px 22px}}
