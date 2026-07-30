@@ -1,15 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { BarChart3, CalendarDays, Check, ChevronDown, CirclePlus, Download, FileSpreadsheet, LayoutDashboard, LoaderCircle, Plus, Save, Trash2, UserRound } from 'lucide-react'
 import * as XLSX from 'xlsx'
-import { isConfigured, supabase } from './lib/supabase'
+import { supabase } from './lib/supabase'
 import type { Case, Employee, Factor, Report, Reward } from './types'
 
 const emptyCase = (): Case => ({ order_number: '', order_amount: '', personal_consultant: '', client_name: '', segment: '', phone: '', situation: '' })
 const emptyFactor = (type: Factor['type']): Factor => ({ type, description: '', suggested_by: '' })
 const emptyReward = (): Reward => ({ employee_name: '', reward_reason: '', reward_date: '', penalty_reason: '', penalty_date: '' })
 const monthNow = new Date().toISOString().slice(0, 7)
-const demoLeaders: Employee[] = [{ id: 'demo-1', name: 'Голубкин Дмитрий' }, { id: 'demo-2', name: 'Анистратаова Елена' }, { id: 'demo-3', name: 'Процко Алина' }, { id: 'demo-4', name: 'Черданцев Илья' }]
-
 export default function App() {
   const [page, setPage] = useState<'form' | 'admin'>('form')
   const [leaders, setLeaders] = useState<Employee[]>([])
@@ -27,7 +25,7 @@ export default function App() {
 
   useEffect(() => {
     async function loadLeaders() {
-      if (!supabase) { setLeaders(demoLeaders); return }
+      if (!supabase) { setNotice('Подключение к Supabase не настроено. Обратитесь к администратору.'); return }
       const { data, error } = await supabase
         .from('employees')
         .select('id,name,Position')
@@ -57,17 +55,15 @@ export default function App() {
     if (!leader || !month || !cases.some((item) => item.order_number && item.situation)) { setNotice('Выберите лидера и заполните хотя бы один кейс'); return }
     setSaving(true)
     const report: Report = { leader_id: leader.id, leader_name: leader.name, report_month: `${month}-01`, cases, factors, rewards }
-    if (!supabase) { localStorage.setItem(`leader-report-${leader.id}-${month}`, JSON.stringify(report)); setNotice('Демо: отчёт сохранён в браузере') }
-    else {
-      const { error } = await supabase.from('leader_reports').upsert(report, { onConflict: 'leader_id,report_month' })
-      setNotice(error ? `Ошибка: ${error.message}` : 'Отчёт успешно сохранён')
-    }
+    if (!supabase) { setNotice('Нет подключения к Supabase. Отчёт не сохранён.'); setSaving(false); return }
+    const { error } = await supabase.from('leader_reports').upsert(report, { onConflict: 'leader_id,report_month' })
+    setNotice(error ? `Ошибка: ${error.message}` : 'Отчёт успешно сохранён')
     setSaving(false)
   }
 
   async function openAdmin() {
     setPage('admin')
-    if (!supabase) { setReports(Object.keys(localStorage).filter((k) => k.startsWith('leader-report-')).map((k) => JSON.parse(localStorage.getItem(k)!))); return }
+    if (!supabase) { setNotice('Нет подключения к Supabase'); return }
     const { data, error } = await supabase.from('leader_reports').select('*').order('report_month', { ascending: false })
     if (error) setNotice(`Ошибка: ${error.message}`); else setReports((data || []) as Report[])
   }
@@ -93,7 +89,7 @@ export default function App() {
       <div className="aside-footer"><div className="avatar">АД</div><div><b>Администратор</b><span>Панель управления</span></div></div>
     </aside>
     <main>
-      <header><div><p className="eyebrow">РАБОЧЕЕ ПРОСТРАНСТВО</p><h1>{page === 'form' ? 'Отчёт лидера' : 'Все отчёты'}</h1></div>{!isConfigured && <span className="demo-badge">ДЕМО-РЕЖИМ</span>}</header>
+      <header><div><p className="eyebrow">РАБОЧЕЕ ПРОСТРАНСТВО</p><h1>{page === 'form' ? 'Отчёт лидера' : 'Все отчёты'}</h1></div><span className={`live-badge ${supabase ? '' : 'offline'}`}><i/> {supabase ? 'РАБОЧИЙ РЕЖИМ' : 'НЕТ ПОДКЛЮЧЕНИЯ'}</span></header>
       {notice && <div className="notice" onClick={() => setNotice('')}><Check size={17}/>{notice}</div>}
       {page === 'form' ? <>
         <section className="intro"><div><h2>Добрый день!</h2><p>Расскажите о результатах команды за выбранный месяц. Все поля можно сохранить и вернуться к ним позже.</p></div><div className="progress"><span>{completed} из 3</span><div><i style={{width: `${completed / 3 * 100}%`}}/></div><small>Основные шаги</small></div></section>
